@@ -1,0 +1,9 @@
+# managed by Puppet
+---
+"pe_console" : "<%= $pierate_ships::pe_console %>"
+<% if $pierate_ships::event_reporting { -%>
+"pe_event_types" : <%= $pierate_ships::event_types %>
+<% } -%>
+<% if $pierate_ships::metric_filters { -%>
+"metric_filters" : <%= $pierate_ships::metric_filters %>
+<% } -%>
