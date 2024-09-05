@@ -17,18 +17,14 @@ Apply the `pierate_ships` class to the primary Puppet Server node with the follo
 > **Note**: This module is under development and currently only supports the Datadog platform.
 
 ##### Required Parameters:
-  * `$auth_token` - API key for the observability platform.
-  * `$merchant_site` - API endpoint receiving Puppet data.
-  * `$merchant` - The observability platform we are shipping to.
+  * `$merchant_fleet` - The fleet of merchants to ship data to. This parameter accepts an Array of Structs that include the `merchant`, `auth_token`, and `site` (API URL) for each observability platform.
 
 **Example**:
 
 ```
 node 'puppet-primary.server.example.com' {
   class { 'pierate_ships':
-    auth_token    => '12345abcde',
-    merchant_site => 'https://api.datadoghq.com',
-    merchant      => 'datadog',
+    merchant_fleet => [{'merchant' => 'datadog', 'auth_token' => 'abcd1234, 'site' => 'https://api.datadoghq.com'}],
   }
 }
 ```
