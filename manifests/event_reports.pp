@@ -1,10 +1,10 @@
 # @summary This class adds the event reporting integration for Puppet Enterprise
 #
-# @example
-#   include pierate_ships::event_reports
+# @param [Array[Struct[{'merchant' => String[Enum['datadog']], 'auth_token' => String, 'site' => String,}]]] merchant_fleet
+#   The fleet of merchants to ship data to
 class pierate_ships::event_reports (
-  Enum['datadog'] $merchant = $pierate_ships::merchant,
-){
+  Hash[String, Array] $merchant_fleet = $pierate_ships::merchant_fleet,
+) {
   if $pe_event_forwarding::confdir != undef {
     $confdir_base_path = $pe_event_forwarding::confdir
   }
@@ -24,20 +24,22 @@ class pierate_ships::event_reports (
     $group          = 'pe-puppet'
   }
 
-  package {'puppet_dogapi':
+  package { 'puppet_dogapi':
     ensure   => present,
     name     => 'dogapi',
     provider => 'puppet_gem',
   }
 
-  file { "${confdir_base_path}/pe_event_forwarding/processors.d/${merchant}_pe_events.rb":
-    ensure  => file,
-    owner   => $owner,
-    group   => $group,
-    mode    => '0755',
-    source  => "puppet:///modules/pierate_ships/${merchant}_pe_events.rb",
-    require => [
-      Class['pe_event_forwarding'],
-    ],
+  $merchant_fleet.each |$ship| {
+    file { "${confdir_base_path}/pe_event_forwarding/processors.d/${ship[0]}_pe_events.rb":
+      ensure  => file,
+      owner   => $owner,
+      group   => $group,
+      mode    => '0755',
+      source  => "puppet:///modules/pierate_ships/${ship[0]}_pe_events.rb",
+      require => [
+        Class['pe_event_forwarding'],
+      ],
+    }
   }
 }

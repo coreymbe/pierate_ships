@@ -1,12 +1,11 @@
 # @summary This class adds the puppet report integration for PE & OSP
 #
-# @example
-#   include pierate_ships::puppet_reports
-class pierate_ships::puppet_reports(
-  Enum['datadog'] $merchant = $pierate_ships::merchant,
+# @param [Array[Struct[{'merchant' => String[Enum['datadog']], 'auth_token' => String, 'site' => String,}]]] merchant_fleet
+#   The fleet of merchants to ship data to
+class pierate_ships::puppet_reports (
+  Hash[String, Array] $merchant_fleet = $pierate_ships::merchant_fleet,
 ) {
-
-  package {'puppetserver_dogapi':
+  package { 'puppetserver_dogapi':
     ensure   => present,
     name     => 'dogapi',
     provider => 'puppetserver_gem',
@@ -26,13 +25,15 @@ class pierate_ships::puppet_reports(
     $service        = 'puppetserver'
   }
 
-  Resource[$ini_subsetting] { "enable ${merchant} reporting":
-    ensure               => present,
-    path                 => '/etc/puppetlabs/puppet/puppet.conf',
-    section              => 'master',
-    setting              => 'reports',
-    subsetting           => $merchant,
-    subsetting_separator => ',',
-    notify               => Service[$service],
+  $merchant_fleet.each |$ship| {
+    Resource[$ini_subsetting] { "enable ${ship[0]} reporting":
+      ensure               => present,
+      path                 => '/etc/puppetlabs/puppet/puppet.conf',
+      section              => 'master',
+      setting              => 'reports',
+      subsetting           => $ship[0],
+      subsetting_separator => ',',
+      notify               => Service[$service],
+    }
   }
 }
